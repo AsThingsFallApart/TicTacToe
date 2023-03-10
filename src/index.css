@@ -2,7 +2,6 @@ body {
   background-color: lavenderblush;
   margin: 1rem;
   /* border: 1px black dashed; */
-  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
