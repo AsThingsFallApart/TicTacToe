@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-function GameSquare({ playerPiece }) {
-  const [defaultText, setDefaultText] = useState("");
+function GameSquare({ playerPiece, squareID, rowID, recordBoardState }) {
+  const [text, setText] = useState("");
 
   function handlePiecePlacement(event) {
     const clickedBox = event.target;
@@ -10,21 +10,39 @@ function GameSquare({ playerPiece }) {
     if (clickedBox.textContent === "") {
       clickedBox.textContent = playerPiece;
     }
+
+    setText(clickedBox.textContent);
+    recordBoardState(rowID, squareID, playerPiece);
   }
 
   return (
     <div className="gameSquare" onClick={handlePiecePlacement}>
-      {defaultText}
+      {text}
     </div>
   );
 }
 
-function GameRow({ playerPiece }) {
+function GameRow({ playerPiece, rowID, recordBoardState }) {
   return (
     <div className="gameRow">
-      <GameSquare playerPiece={playerPiece} />
-      <GameSquare playerPiece={playerPiece} />
-      <GameSquare playerPiece={playerPiece} />
+      <GameSquare
+        playerPiece={playerPiece}
+        squareID={0}
+        rowID={rowID}
+        recordBoardState={recordBoardState}
+      />
+      <GameSquare
+        playerPiece={playerPiece}
+        squareID={1}
+        rowID={rowID}
+        recordBoardState={recordBoardState}
+      />
+      <GameSquare
+        playerPiece={playerPiece}
+        squareID={2}
+        rowID={rowID}
+        recordBoardState={recordBoardState}
+      />
     </div>
   );
 }
@@ -52,7 +70,6 @@ function GameBoard({
         setPlayerID(1);
       }
 
-      recordBoardState();
       checkForWinCondition();
     }
   }
@@ -61,9 +78,21 @@ function GameBoard({
 
   return (
     <div className="gameBoard" onClick={handlePlayerEndturn}>
-      <GameRow playerPiece={playerPiece} />
-      <GameRow playerPiece={playerPiece} />
-      <GameRow playerPiece={playerPiece} />
+      <GameRow
+        playerPiece={playerPiece}
+        rowID={0}
+        recordBoardState={recordBoardState}
+      />
+      <GameRow
+        playerPiece={playerPiece}
+        rowID={1}
+        recordBoardState={recordBoardState}
+      />
+      <GameRow
+        playerPiece={playerPiece}
+        rowID={2}
+        recordBoardState={recordBoardState}
+      />
     </div>
   );
 }
@@ -120,17 +149,21 @@ export default function App() {
   //  Index 0 = top left square, index 1 = top middle square, and so forth...
   //  Char '0' represents empty space, '1' represents 'X', '2' represents 'O'.
   const [boardState, setBoardState] = useState([
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
   ]);
+  const [row0, setRow0] = useState([]);
+  const [row1, setRow1] = useState(["", "", ""]);
+  const [row2, setRow2] = useState([]);
 
-  function recordBoardState() {
-    console.log(`boardState:\t${boardState}`);
-    console.log(`boardState[0]:\t${boardState[0]}`);
-    console.log(`boardState[1]:\t${boardState[1]}`);
-    console.log(`boardState[2]:\t${boardState[2]}`);
+  function recordBoardState(changedRowID, changedSquareID, playerPiece) {
+    const boardCopy = [...boardState];
+    boardCopy[changedRowID][changedSquareID] = playerPiece;
+    setBoardState(boardCopy);
   }
+
+  function returnToOldBoardState(boardState) {}
 
   return (
     <div className="appLayout">
