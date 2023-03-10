@@ -1,18 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 
-function GameSquare({ playerPiece, squareID, rowID, recordBoardState }) {
+function GameSquare({
+  playerPiece,
+  squareID,
+  rowID,
+  recordBoardState,
+  isGameOver,
+}) {
   const [text, setText] = useState("");
 
   function handlePiecePlacement(event) {
-    const clickedBox = event.target;
+    console.log("first");
+    if (!isGameOver) {
+      const clickedBox = event.target;
 
-    if (clickedBox.textContent === "") {
-      clickedBox.textContent = playerPiece;
+      if (clickedBox.textContent === "") {
+        clickedBox.textContent = playerPiece;
+      }
+
+      setText(clickedBox.textContent);
+      recordBoardState(rowID, squareID, playerPiece);
     }
-
-    setText(clickedBox.textContent);
-    recordBoardState(rowID, squareID, playerPiece);
   }
 
   return (
@@ -22,7 +31,7 @@ function GameSquare({ playerPiece, squareID, rowID, recordBoardState }) {
   );
 }
 
-function GameRow({ playerPiece, rowID, recordBoardState }) {
+function GameRow({ playerPiece, rowID, recordBoardState, isGameOver }) {
   return (
     <div className="gameRow">
       <GameSquare
@@ -30,36 +39,100 @@ function GameRow({ playerPiece, rowID, recordBoardState }) {
         squareID={0}
         rowID={rowID}
         recordBoardState={recordBoardState}
+        isGameOver={isGameOver}
       />
       <GameSquare
         playerPiece={playerPiece}
         squareID={1}
         rowID={rowID}
         recordBoardState={recordBoardState}
+        isGameOver={isGameOver}
       />
       <GameSquare
         playerPiece={playerPiece}
         squareID={2}
         rowID={rowID}
         recordBoardState={recordBoardState}
+        isGameOver={isGameOver}
       />
     </div>
   );
 }
 
 function GameBoard({
-  playerID,
-  setPlayerID,
   playerPiece,
-  setPlayerPiece,
-  boardState,
+  transferPlacementPriority,
   recordBoardState,
   isGameOver,
+  checkForWinCondition,
 }) {
   function handlePlayerEndturn() {
+    console.log("second...?");
+    console.log(`Player with ${playerPiece} piece's turn has ended...`);
+
+    checkForWinCondition();
+    transferPlacementPriority();
+  }
+
+  return (
+    <div className="gameBoard" onClick={handlePlayerEndturn}>
+      <GameRow
+        playerPiece={playerPiece}
+        rowID={0}
+        recordBoardState={recordBoardState}
+        isGameOver={isGameOver}
+      />
+      <GameRow
+        playerPiece={playerPiece}
+        rowID={1}
+        recordBoardState={recordBoardState}
+        isGameOver={isGameOver}
+      />
+      <GameRow
+        playerPiece={playerPiece}
+        rowID={2}
+        recordBoardState={recordBoardState}
+        isGameOver={isGameOver}
+      />
+    </div>
+  );
+}
+
+function GameDescription({ playerID, playerPiece, isGameOver }) {
+  if (!isGameOver) {
+    return (
+      <div>
+        <p>
+          Player {playerID}'s Turn: Place an {playerPiece}!
+        </p>
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <p>Player {playerID} wins!</p>
+      </div>
+    );
+  }
+}
+
+function GameArea({
+  isGameOver,
+  boardState,
+  recordBoardState,
+  handleThreeInARow,
+}) {
+  const [playerPiece, setPlayerPiece] = useState("X");
+  const [playerID, setPlayerID] = useState(1);
+
+  function transferPlacementPriority() {
+    console.log(`isGameOver:\t${isGameOver}`);
     if (!isGameOver) {
+      console.log("\ttransfering placement priority...");
       if (playerPiece === "X") {
+        console.log(`Piece in play is ${playerPiece}`);
         setPlayerPiece("O");
+        console.log(`Piece in play is now ${playerPiece}`);
       } else {
         setPlayerPiece("X");
       }
@@ -69,76 +142,125 @@ function GameBoard({
       } else {
         setPlayerID(1);
       }
-
-      checkForWinCondition();
     }
   }
 
-  function checkForWinCondition() {}
+  function checkForWinCondition() {
+    // only eight possible win conditions, so hard-code all eight.
+    //  alternatively, a breadth-first search would be a scalable solution.
+    /*
+     * How the board is internally stored:
+     *       -----------------------------------------------------------
+     *       -                  -                  -                   -
+     *       - boardState[0][0] - boardState[0][1] - boardstate[0][2]  -
+     *       -                  -                  -                   -
+     *       -----------------------------------------------------------
+     *       -                  -                  -                   -
+     *       - boardState[1][0] - boardState[1][1] - boardstate[1][2]  -
+     *       -                  -                  -                   -
+     *       -----------------------------------------------------------
+     *       -                  -                  -                   -
+     *       - boardState[2][0] - boardState[2][1] - boardstate[2][2]  -
+     *       -                  -                  -                   -
+     *       -----------------------------------------------------------
+     */
 
-  return (
-    <div className="gameBoard" onClick={handlePlayerEndturn}>
-      <GameRow
-        playerPiece={playerPiece}
-        rowID={0}
-        recordBoardState={recordBoardState}
-      />
-      <GameRow
-        playerPiece={playerPiece}
-        rowID={1}
-        recordBoardState={recordBoardState}
-      />
-      <GameRow
-        playerPiece={playerPiece}
-        rowID={2}
-        recordBoardState={recordBoardState}
-      />
-    </div>
-  );
-}
+    // check rows
+    if (
+      boardState[0][0] === playerPiece &&
+      boardState[0][1] === playerPiece &&
+      boardState[0][2] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
+    if (
+      boardState[1][0] === playerPiece &&
+      boardState[1][1] === playerPiece &&
+      boardState[1][2] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
+    if (
+      boardState[2][0] === playerPiece &&
+      boardState[2][1] === playerPiece &&
+      boardState[2][2] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
 
-function GameDescription({ playerID, playerPiece }) {
-  return (
-    <div>
-      <p>
-        Player {playerID}, place your {playerPiece}
-      </p>
-    </div>
-  );
-}
+    // check columns
+    if (
+      boardState[0][0] === playerPiece &&
+      boardState[1][0] === playerPiece &&
+      boardState[2][0] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
+    if (
+      boardState[0][1] === playerPiece &&
+      boardState[1][1] === playerPiece &&
+      boardState[2][1] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
+    if (
+      boardState[0][2] === playerPiece &&
+      boardState[1][2] === playerPiece &&
+      boardState[2][2] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
 
-function GameArea({ isGameOver, boardState, recordBoardState }) {
-  const [playerPiece, setPlayerPiece] = useState("X");
-  const [playerID, setPlayerID] = useState(1);
+    // check diagonals
+    if (
+      boardState[0][0] === playerPiece &&
+      boardState[1][1] === playerPiece &&
+      boardState[2][2] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
+    if (
+      boardState[2][0] === playerPiece &&
+      boardState[1][1] === playerPiece &&
+      boardState[0][2] === playerPiece
+    ) {
+      handleThreeInARow(playerPiece);
+    }
+  }
 
   return (
     <div className="gameArea">
-      <GameDescription playerID={playerID} playerPiece={playerPiece} />
-      <GameBoard
+      <GameDescription
         playerID={playerID}
-        setPlayerID={setPlayerID}
         playerPiece={playerPiece}
-        setPlayerPiece={setPlayerPiece}
         isGameOver={isGameOver}
-        boardState={boardState}
+      />
+      <GameBoard
+        playerPiece={playerPiece}
+        transferPlacementPriority={transferPlacementPriority}
+        isGameOver={isGameOver}
         recordBoardState={recordBoardState}
+        checkForWinCondition={checkForWinCondition}
       />
     </div>
   );
 }
 
-function HistoryButton() {
+function HistoryButton({ boardState, returnToOldBoardState }) {
   return (
     <div>
-      <button>Go back to game beginning</button>
+      <button onClick={returnToOldBoardState}>Go back to game beginning</button>
     </div>
   );
 }
 
-function GameHistory({ boardState }) {
+function GameHistory({ boardState, returnToOldBoardState }) {
   return (
     <div className="historyArea">
-      <HistoryButton />
+      <HistoryButton
+        boardState={boardState}
+        returnToOldBoardState={returnToOldBoardState}
+      />
     </div>
   );
 }
@@ -153,9 +275,6 @@ export default function App() {
     ["", "", ""],
     ["", "", ""],
   ]);
-  const [row0, setRow0] = useState([]);
-  const [row1, setRow1] = useState(["", "", ""]);
-  const [row2, setRow2] = useState([]);
 
   function recordBoardState(changedRowID, changedSquareID, playerPiece) {
     const boardCopy = [...boardState];
@@ -165,14 +284,22 @@ export default function App() {
 
   function returnToOldBoardState(boardState) {}
 
+  function handleThreeInARow(winningPiece) {
+    setGameOver(true);
+  }
+
   return (
     <div className="appLayout">
       <GameArea
         isGameOver={isGameOver}
         boardState={boardState}
         recordBoardState={recordBoardState}
+        handleThreeInARow={handleThreeInARow}
       />
-      <GameHistory boardState={boardState} />
+      <GameHistory
+        boardState={boardState}
+        returnToOldBoardState={returnToOldBoardState}
+      />
     </div>
   );
 }
