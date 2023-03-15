@@ -1,3 +1,4 @@
+import { toHaveAttribute } from "@testing-library/jest-dom/dist/matchers";
 import { useState } from "react";
 import "./App.css";
 
@@ -5,24 +6,18 @@ function GameSquare({
   playerPiece,
   squareID,
   rowID,
-  recordBoardState,
+  advanceGameState,
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
 }) {
   const [text, setText] = useState("");
 
-  function handleClick(event) {
+  function handleClick(e) {
     // place a piece
     if (!isGameOver) {
-      const clickedBox = event.target;
-
-      if (clickedBox.textContent === "") {
-        clickedBox.textContent = playerPiece;
-      }
-
-      setText(clickedBox.textContent);
-      recordBoardState(rowID, squareID, playerPiece);
+      setText(playerPiece);
+      advanceGameState(rowID, squareID, playerPiece);
       checkForWinCondition();
       transferPlacementPriority();
     }
@@ -38,7 +33,7 @@ function GameSquare({
 function GameRow({
   playerPiece,
   rowID,
-  recordBoardState,
+  advanceGameState,
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
@@ -49,7 +44,7 @@ function GameRow({
         playerPiece={playerPiece}
         squareID={0}
         rowID={rowID}
-        recordBoardState={recordBoardState}
+        advanceGameState={advanceGameState}
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
@@ -58,7 +53,7 @@ function GameRow({
         playerPiece={playerPiece}
         squareID={1}
         rowID={rowID}
-        recordBoardState={recordBoardState}
+        advanceGameState={advanceGameState}
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
@@ -67,7 +62,7 @@ function GameRow({
         playerPiece={playerPiece}
         squareID={2}
         rowID={rowID}
-        recordBoardState={recordBoardState}
+        advanceGameState={advanceGameState}
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
@@ -78,7 +73,7 @@ function GameRow({
 
 function GameBoard({
   playerPiece,
-  recordBoardState,
+  advanceGameState,
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
@@ -88,7 +83,7 @@ function GameBoard({
       <GameRow
         playerPiece={playerPiece}
         rowID={0}
-        recordBoardState={recordBoardState}
+        advanceGameState={advanceGameState}
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
@@ -96,7 +91,7 @@ function GameBoard({
       <GameRow
         playerPiece={playerPiece}
         rowID={1}
-        recordBoardState={recordBoardState}
+        advanceGameState={advanceGameState}
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
@@ -104,7 +99,7 @@ function GameBoard({
       <GameRow
         playerPiece={playerPiece}
         rowID={2}
-        recordBoardState={recordBoardState}
+        advanceGameState={advanceGameState}
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
@@ -139,7 +134,7 @@ function GameDescription({
   }
 }
 
-function GameArea({ boardState, recordBoardState }) {
+function GameArea({ boardState, advanceGameState }) {
   const [playerPiece, setPlayerPiece] = useState("X");
   const [playerID, setPlayerID] = useState(1);
   const [winnerPiece, setWinnerPiece] = useState("");
@@ -267,7 +262,7 @@ function GameArea({ boardState, recordBoardState }) {
       <GameBoard
         playerPiece={playerPiece}
         isGameOver={isGameOver}
-        recordBoardState={recordBoardState}
+        advanceGameState={advanceGameState}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
       />
@@ -275,45 +270,75 @@ function GameArea({ boardState, recordBoardState }) {
   );
 }
 
-function HistoryButton({ boardState, returnToOldBoardState }) {
-  return (
-    <div>
-      <button onClick={returnToOldBoardState}>Go back to game beginning</button>
-    </div>
-  );
-}
+function GameHistory({ oldBoards, returnToOldBoardState }) {
+  const buttonList = oldBoards.map((boardState, turnNumber) => {
+    if (turnNumber === 0) {
+      return (
+        <button
+          key={turnNumber}
+          onClick={() => returnToOldBoardState(boardState)}
+        >
+          Go to game beginning
+        </button>
+      );
+    } else {
+      return (
+        <button
+          key={turnNumber}
+          onClick={() => returnToOldBoardState(boardState)}
+        >
+          Go to turn #{turnNumber}
+        </button>
+      );
+    }
+  });
 
-function GameHistory({ boardState, returnToOldBoardState }) {
-  return (
-    <div className="historyArea">
-      <HistoryButton
-        boardState={boardState}
-        returnToOldBoardState={returnToOldBoardState}
-      />
-    </div>
-  );
+  return <div className="historyArea">{buttonList}</div>;
 }
 
 export default function App() {
+  const [turnNumber, setTurnNumber] = useState(0);
   const [boardState, setBoardState] = useState([
     ["", "", ""],
     ["", "", ""],
     ["", "", ""],
   ]);
+  const [oldBoards, setOldBoards] = useState([
+    [
+      ["", "", ""],
+      ["", "", ""],
+      ["", "", ""],
+    ],
+  ]);
+
+  function addToHistory() {
+    const boardStateDeepCopy = JSON.parse(JSON.stringify(boardState));
+    setOldBoards([...oldBoards, boardStateDeepCopy]);
+  }
+
+  function advanceGameState(changedRowID, changedSquareID, playerPiece) {
+    setTurnNumber(turnNumber + 1);
+    recordBoardState(changedRowID, changedSquareID, playerPiece);
+  }
 
   function recordBoardState(changedRowID, changedSquareID, playerPiece) {
     const boardCopy = [...boardState];
     boardCopy[changedRowID][changedSquareID] = playerPiece;
     setBoardState(boardCopy);
+    addToHistory();
   }
 
-  function returnToOldBoardState(boardState) {}
+  function returnToOldBoardState(boardState) {
+    console.log(`Going to...`);
+    console.log(boardState);
+  }
 
   return (
     <div className="appLayout">
-      <GameArea boardState={boardState} recordBoardState={recordBoardState} />
+      <GameArea boardState={boardState} advanceGameState={advanceGameState} />
       <GameHistory
-        boardState={boardState}
+        turnNumber={turnNumber}
+        oldBoards={oldBoards}
         returnToOldBoardState={returnToOldBoardState}
       />
     </div>
