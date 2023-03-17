@@ -1,4 +1,3 @@
-import { toHaveAttribute } from "@testing-library/jest-dom/dist/matchers";
 import { useState } from "react";
 import "./App.css";
 
@@ -10,12 +9,21 @@ function GameSquare({
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
+  isRewinding,
+  columnToRewind,
+  rowToRewind,
+  rewindOneTurn,
 }) {
   const [text, setText] = useState("");
 
+  console.log(`Rendering square (${rowID}, ${squareID})...`);
+  console.log(`\tisRewinding:\t${isRewinding}`);
+  console.log(`\trowToRewind:\t${rowToRewind}`);
+  console.log(`\tcolumnToRewind:\t${columnToRewind}`);
+
   function handleClick(e) {
     // place a piece
-    if (!isGameOver) {
+    if (!isGameOver && text === "" && !isRewinding) {
       setText(playerPiece);
       advanceGameState(rowID, squareID, playerPiece);
       checkForWinCondition();
@@ -23,11 +31,19 @@ function GameSquare({
     }
   }
 
-  return (
-    <div className="gameSquare" onClick={handleClick}>
-      {text}
-    </div>
-  );
+  if (isRewinding && rowID === rowToRewind && squareID === columnToRewind) {
+    return (
+      <div className="game-square" onClick={handleClick}>
+        <div className="game-square-text-fading">{text}</div>
+      </div>
+    );
+  } else {
+    return (
+      <div className="game-square" onClick={handleClick}>
+        <div className="game-square-text">{text}</div>
+      </div>
+    );
+  }
 }
 
 function GameRow({
@@ -37,9 +53,13 @@ function GameRow({
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
+  isRewinding,
+  rowToRewind,
+  columnToRewind,
+  rewindOneTurn,
 }) {
   return (
-    <div className="gameRow">
+    <div className="game-row">
       <GameSquare
         playerPiece={playerPiece}
         squareID={0}
@@ -48,6 +68,10 @@ function GameRow({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
+        isRewinding={isRewinding}
+        rowToRewind={rowToRewind}
+        columnToRewind={columnToRewind}
+        rewindOneTurn={rewindOneTurn}
       />
       <GameSquare
         playerPiece={playerPiece}
@@ -57,6 +81,10 @@ function GameRow({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
+        isRewinding={isRewinding}
+        rowToRewind={rowToRewind}
+        columnToRewind={columnToRewind}
+        rewindOneTurn={rewindOneTurn}
       />
       <GameSquare
         playerPiece={playerPiece}
@@ -66,6 +94,10 @@ function GameRow({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
+        isRewinding={isRewinding}
+        rowToRewind={rowToRewind}
+        columnToRewind={columnToRewind}
+        rewindOneTurn={rewindOneTurn}
       />
     </div>
   );
@@ -77,9 +109,13 @@ function GameBoard({
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
+  isRewinding,
+  rowToRewind,
+  columnToRewind,
+  rewindOneTurn,
 }) {
   return (
-    <div className="gameBoard">
+    <div className="game-board">
       <GameRow
         playerPiece={playerPiece}
         rowID={0}
@@ -87,6 +123,10 @@ function GameBoard({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
+        isRewinding={isRewinding}
+        rowToRewind={rowToRewind}
+        columnToRewind={columnToRewind}
+        rewindOneTurn={rewindOneTurn}
       />
       <GameRow
         playerPiece={playerPiece}
@@ -95,6 +135,10 @@ function GameBoard({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
+        isRewinding={isRewinding}
+        rowToRewind={rowToRewind}
+        columnToRewind={columnToRewind}
+        rewindOneTurn={rewindOneTurn}
       />
       <GameRow
         playerPiece={playerPiece}
@@ -103,6 +147,10 @@ function GameBoard({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
+        isRewinding={isRewinding}
+        rowToRewind={rowToRewind}
+        columnToRewind={columnToRewind}
+        rewindOneTurn={rewindOneTurn}
       />
     </div>
   );
@@ -134,7 +182,14 @@ function GameDescription({
   }
 }
 
-function GameArea({ boardState, advanceGameState }) {
+function GameArea({
+  boardState,
+  advanceGameState,
+  isRewinding,
+  rowToRewind,
+  columnToRewind,
+  rewindOneTurn,
+}) {
   const [playerPiece, setPlayerPiece] = useState("X");
   const [playerID, setPlayerID] = useState(1);
   const [winnerPiece, setWinnerPiece] = useState("");
@@ -142,13 +197,9 @@ function GameArea({ boardState, advanceGameState }) {
   const [isGameOver, setGameOver] = useState(false);
 
   function transferPlacementPriority() {
-    console.log(`isGameOver:\t${isGameOver}`);
     if (!isGameOver) {
-      console.log("\ttransfering placement priority...");
       if (playerPiece === "X") {
-        console.log(`Piece in play is ${playerPiece}`);
         setPlayerPiece("O");
-        console.log(`Piece in play is now ${playerPiece}`);
       } else {
         setPlayerPiece("X");
       }
@@ -251,7 +302,7 @@ function GameArea({ boardState, advanceGameState }) {
   }
 
   return (
-    <div className="gameArea">
+    <div className="game-area">
       <GameDescription
         playerID={playerID}
         playerPiece={playerPiece}
@@ -265,18 +316,23 @@ function GameArea({ boardState, advanceGameState }) {
         advanceGameState={advanceGameState}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
+        isRewinding={isRewinding}
+        rowToRewind={rowToRewind}
+        columnToRewind={columnToRewind}
+        rewindOneTurn={rewindOneTurn}
       />
     </div>
   );
 }
 
-function GameHistory({ oldBoards, returnToOldBoardState }) {
+function GameHistory({ oldBoards, handleHistoryButtonClick }) {
   const buttonList = oldBoards.map((boardState, turnNumber) => {
     if (turnNumber === 0) {
       return (
         <button
+          className="history-button"
           key={turnNumber}
-          onClick={() => returnToOldBoardState(boardState)}
+          onClick={() => handleHistoryButtonClick(turnNumber)}
         >
           Go to game beginning
         </button>
@@ -284,8 +340,9 @@ function GameHistory({ oldBoards, returnToOldBoardState }) {
     } else {
       return (
         <button
+          className="history-button"
           key={turnNumber}
-          onClick={() => returnToOldBoardState(boardState)}
+          onClick={() => handleHistoryButtonClick(turnNumber)}
         >
           Go to turn #{turnNumber}
         </button>
@@ -293,11 +350,10 @@ function GameHistory({ oldBoards, returnToOldBoardState }) {
     }
   });
 
-  return <div className="historyArea">{buttonList}</div>;
+  return <div className="history-area">{buttonList}</div>;
 }
 
 export default function App() {
-  const [turnNumber, setTurnNumber] = useState(0);
   const [boardState, setBoardState] = useState([
     ["", "", ""],
     ["", "", ""],
@@ -311,13 +367,72 @@ export default function App() {
     ],
   ]);
 
-  function addToHistory() {
+  const [isRewinding, setIsRewinding] = useState(false);
+  const [rowHistory, setRowHistory] = useState([-1]);
+  const [columnHistory, setColumnHistory] = useState([-1]);
+  const [currentTurnNumber, setCurrentTurnNumber] = useState(0);
+  const [oldTurnNumber, setOldTurnNumber] = useState(-1);
+
+  function rewindOneTurn() {
+    if (isRewinding) {
+      if (currentTurnNumber !== oldTurnNumber) {
+        console.log(`Reverting, piece by piece, to turn #${oldTurnNumber}...`);
+        console.log(`\tcurrentTurn:\t${currentTurnNumber}`);
+        console.log(`\tpiecesToRemove:\t${currentTurnNumber - oldTurnNumber}`);
+        console.log(oldBoards);
+
+        console.log(rowHistory);
+        console.log(columnHistory);
+        console.log(
+          `Removing turn #${currentTurnNumber}'s piece: "${
+            oldBoards[currentTurnNumber][rowHistory[currentTurnNumber]][
+              columnHistory[currentTurnNumber]
+            ]
+          }" @ square (${rowHistory[currentTurnNumber]}, ${
+            columnHistory[currentTurnNumber]
+          })...`
+        );
+        console.log(
+          `Sending the rewind signal to square (${
+            rowHistory[rowHistory.length - 1]
+          }, ${columnHistory[columnHistory.length - 1]})!`
+        );
+
+        const nextRowHistory = rowHistory.slice(0, -1);
+        setRowHistory(nextRowHistory);
+        const nextColumnHistory = columnHistory.slice(0, -1);
+        setColumnHistory(nextColumnHistory);
+
+        setCurrentTurnNumber(currentTurnNumber - 1);
+      } else {
+        setIsRewinding(false);
+      }
+    }
+  }
+
+  function addToSquareHistory(changedRowID, changedSquareID) {
+    setRowHistory([...rowHistory, changedRowID]);
+    setColumnHistory([...columnHistory, changedSquareID]);
+
+    console.log("rowHistory:");
+    console.log(rowHistory);
+    console.log("columnHistory:");
+    console.log(columnHistory);
+
+    console.log(
+      `lastChangedSquare:\t(${rowHistory[rowHistory.length - 1]}, ${
+        columnHistory[columnHistory.length - 1]
+      })`
+    );
+  }
+
+  function addToBoardHistory() {
     const boardStateDeepCopy = JSON.parse(JSON.stringify(boardState));
     setOldBoards([...oldBoards, boardStateDeepCopy]);
   }
 
   function advanceGameState(changedRowID, changedSquareID, playerPiece) {
-    setTurnNumber(turnNumber + 1);
+    setCurrentTurnNumber(currentTurnNumber + 1);
     recordBoardState(changedRowID, changedSquareID, playerPiece);
   }
 
@@ -325,21 +440,31 @@ export default function App() {
     const boardCopy = [...boardState];
     boardCopy[changedRowID][changedSquareID] = playerPiece;
     setBoardState(boardCopy);
-    addToHistory();
+    addToBoardHistory();
+    addToSquareHistory(changedRowID, changedSquareID);
   }
 
-  function returnToOldBoardState(boardState) {
-    console.log(`Going to...`);
-    console.log(boardState);
+  function handleHistoryButtonClick(turnNumberToReturnTo) {
+    console.log(
+      `Button clicked:\n\tReverting to turn #${turnNumberToReturnTo}...`
+    );
+    setIsRewinding(true);
+    setOldTurnNumber(turnNumberToReturnTo);
   }
 
   return (
-    <div className="appLayout">
-      <GameArea boardState={boardState} advanceGameState={advanceGameState} />
+    <div className="app-layout">
+      <GameArea
+        boardState={boardState}
+        advanceGameState={advanceGameState}
+        isRewinding={isRewinding}
+        rowToRewind={rowHistory[rowHistory.length - 1]}
+        columnToRewind={columnHistory[columnHistory.length - 1]}
+        rewindOneTurn={rewindOneTurn}
+      />
       <GameHistory
-        turnNumber={turnNumber}
         oldBoards={oldBoards}
-        returnToOldBoardState={returnToOldBoardState}
+        handleHistoryButtonClick={handleHistoryButtonClick}
       />
     </div>
   );
