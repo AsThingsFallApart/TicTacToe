@@ -1,3 +1,29 @@
+.history-button {
+  opacity: 1;
+}
+
+.history-button-fading {
+  animation-duration: 1000ms;
+  animation-name: fadeout;
+}
+
+.game-square-text-fading {
+  animation-duration: 1000ms;
+  animation-name: fadeout;
+  animation-fill-mode: forwards;
+  cursor: default;
+}
+
+@keyframes fadeout {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 .game-square-text {
   opacity: 1;
 }
@@ -6,7 +32,6 @@
   height: 100px;
   width: 100px;
   border: 1px black solid;
-  border-collapse: separate;
   display: flex;
   flex-direction: column;
   font-size: xx-large;

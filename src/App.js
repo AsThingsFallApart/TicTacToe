@@ -10,30 +10,36 @@ function GameSquare({
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
-  isRewinding,
-  columnToRewind,
-  rowToRewind,
-  rewindOneTurn,
+  transitionSequenceSquare,
+  calcTransitionSequence,
 }) {
-  // console.log(`Rendering square (${rowID}, ${squareID})...`);
-  // console.log(`\tboardPiece:\t${boardPiece}`);
-  // console.log(`\tisRewinding:\t${isRewinding}`);
-  // console.log(`\trowToRewind:\t${rowToRewind}`);
-  // console.log(`\tcolumnToRewind:\t${columnToRewind}`);
+  console.log(`Rendering square (${rowID}, ${squareID})...`);
+  console.log(`\tboardPiece:\t${boardPiece}`);
 
   function handleClick(e) {
     // place a piece
-    if (!isGameOver && !isRewinding) {
+    if (!isGameOver) {
+      transitionSequenceSquare.transitionDuration = 0;
       advanceGameState(rowID, squareID, playerPiece);
       checkForWinCondition();
       transferPlacementPriority();
+      // calcTransitionSequence();
     }
   }
 
-  if (isRewinding && rowID === rowToRewind && squareID === columnToRewind) {
+  if (transitionSequenceSquare.transitionDuration > 0) {
     return (
       <div className="game-square" onClick={handleClick}>
-        <div className="game-square-text-fading">{boardPiece}</div>
+        <div
+          className="game-square-text-fading"
+          style={{
+            animationDuration:
+              transitionSequenceSquare.transitionDuration + "ms",
+            animationDelay: transitionSequenceSquare.transitionDelay + "ms",
+          }}
+        >
+          {transitionSequenceSquare.boardPiece}
+        </div>
       </div>
     );
   } else {
@@ -53,10 +59,8 @@ function GameRow({
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
-  isRewinding,
-  rowToRewind,
-  columnToRewind,
-  rewindOneTurn,
+  transitionSequenceRow,
+  calcTransitionSequence,
 }) {
   return (
     <div className="game-row">
@@ -69,10 +73,8 @@ function GameRow({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
-        isRewinding={isRewinding}
-        rowToRewind={rowToRewind}
-        columnToRewind={columnToRewind}
-        rewindOneTurn={rewindOneTurn}
+        transitionSequenceSquare={transitionSequenceRow[0]}
+        calcTransitionSequence={calcTransitionSequence}
       />
       <GameSquare
         boardPiece={boardRow[1]}
@@ -83,10 +85,8 @@ function GameRow({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
-        isRewinding={isRewinding}
-        rowToRewind={rowToRewind}
-        columnToRewind={columnToRewind}
-        rewindOneTurn={rewindOneTurn}
+        transitionSequenceSquare={transitionSequenceRow[1]}
+        calcTransitionSequence={calcTransitionSequence}
       />
       <GameSquare
         boardPiece={boardRow[2]}
@@ -97,10 +97,8 @@ function GameRow({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
-        isRewinding={isRewinding}
-        rowToRewind={rowToRewind}
-        columnToRewind={columnToRewind}
-        rewindOneTurn={rewindOneTurn}
+        transitionSequenceSquare={transitionSequenceRow[2]}
+        calcTransitionSequence={calcTransitionSequence}
       />
     </div>
   );
@@ -113,10 +111,8 @@ function GameBoard({
   isGameOver,
   checkForWinCondition,
   transferPlacementPriority,
-  isRewinding,
-  rowToRewind,
-  columnToRewind,
-  rewindOneTurn,
+  transitionSequence,
+  calcTransitionSequence,
 }) {
   return (
     <div className="game-board">
@@ -128,10 +124,8 @@ function GameBoard({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
-        isRewinding={isRewinding}
-        rowToRewind={rowToRewind}
-        columnToRewind={columnToRewind}
-        rewindOneTurn={rewindOneTurn}
+        transitionSequenceRow={transitionSequence[0]}
+        calcTransitionSequence={calcTransitionSequence}
       />
       <GameRow
         boardRow={boardState[1]}
@@ -141,10 +135,8 @@ function GameBoard({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
-        isRewinding={isRewinding}
-        rowToRewind={rowToRewind}
-        columnToRewind={columnToRewind}
-        rewindOneTurn={rewindOneTurn}
+        transitionSequenceRow={transitionSequence[1]}
+        calcTransitionSequence={calcTransitionSequence}
       />
       <GameRow
         boardRow={boardState[2]}
@@ -154,10 +146,8 @@ function GameBoard({
         isGameOver={isGameOver}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
-        isRewinding={isRewinding}
-        rowToRewind={rowToRewind}
-        columnToRewind={columnToRewind}
-        rewindOneTurn={rewindOneTurn}
+        transitionSequenceRow={transitionSequence[2]}
+        calcTransitionSequence={calcTransitionSequence}
       />
     </div>
   );
@@ -192,12 +182,10 @@ function GameDescription({
 function GameArea({
   boardState,
   advanceGameState,
-  isRewinding,
-  rowToRewind,
-  columnToRewind,
-  rewindOneTurn,
   isGameOver,
   setIsGameOver,
+  transitionSequence,
+  calcTransitionSequence,
 }) {
   const [playerPiece, setPlayerPiece] = useState("X");
   const [playerID, setPlayerID] = useState(1);
@@ -325,10 +313,8 @@ function GameArea({
         advanceGameState={advanceGameState}
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
-        isRewinding={isRewinding}
-        rowToRewind={rowToRewind}
-        columnToRewind={columnToRewind}
-        rewindOneTurn={rewindOneTurn}
+        transitionSequence={transitionSequence}
+        calcTransitionSequence={calcTransitionSequence}
       />
     </div>
   );
@@ -382,19 +368,19 @@ export default function App() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [transitionSequence, setTransitionSequence] = useState([
     [
-      { transitionDuration: 0, transitionDelay: 0 },
-      { transitionDuration: 0, transitionDelay: 0 },
-      { transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
     ],
     [
-      { transitionDuration: 0, transitionDelay: 0 },
-      { transitionDuration: 0, transitionDelay: 0 },
-      { transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
     ],
     [
-      { transitionDuration: 0, transitionDelay: 0 },
-      { transitionDuration: 0, transitionDelay: 0 },
-      { transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
+      { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
     ],
   ]);
 
@@ -440,15 +426,37 @@ export default function App() {
       }
     }
 
+    const transitionDuration = 1000 / mostRecentRowChanges.length;
+    console.log(`transitionDuration:\t${transitionDuration}`);
+    let transitionSequenceCopy = [...transitionSequence];
+    console.log(transitionSequenceCopy);
+
+    for (let i = 0; i < mostRecentRowChanges.length; i++) {
+      for (let j = 0; j < mostRecentColumnChanges.length; j++) {
+        transitionSequenceCopy[mostRecentRowChanges[i]][
+          mostRecentColumnChanges[j]
+        ].boardPiece =
+          boardState[mostRecentRowChanges[i]][mostRecentColumnChanges[j]];
+        transitionSequenceCopy[mostRecentRowChanges[i]][
+          mostRecentColumnChanges[j]
+        ].transitionDuration = transitionDuration;
+        transitionSequenceCopy[mostRecentRowChanges[i]][
+          mostRecentColumnChanges[j]
+        ].transitionDelay = i * transitionDuration;
+      }
+    }
+
     console.log(transitionSequence);
 
-    updateChangedSquareHistory(turnNumberToReturnTo);
+    setTransitionSequence(transitionSequenceCopy);
   }
 
   function handleHistoryButtonClick(turnNumberToReturnTo) {
     console.log(
       `Button clicked:\n\tReverting to turn #${turnNumberToReturnTo}...`
     );
+
+    calcTransitionSequence(turnNumberToReturnTo);
 
     const nextBoardState = oldBoards[turnNumberToReturnTo];
     console.log("nextBoardState:");
@@ -472,8 +480,7 @@ export default function App() {
     //  3. transition delay for all 9 squares
     //    individualTransitionDelay = 1000 /
 
-    calcTransitionSequence(turnNumberToReturnTo);
-
+    updateChangedSquareHistory(turnNumberToReturnTo);
     setCurrentTurnNumber(turnNumberToReturnTo);
   }
 
@@ -516,10 +523,10 @@ export default function App() {
       <GameArea
         boardState={boardState}
         advanceGameState={advanceGameState}
-        rowToRewind={rowHistory[rowHistory.length - 1]}
-        columnToRewind={columnHistory[columnHistory.length - 1]}
         isGameOver={isGameOver}
         setIsGameOver={setIsGameOver}
+        transitionSequence={transitionSequence}
+        calcTransitionSequence={calcTransitionSequence}
       />
       <GameHistory
         oldBoards={oldBoards}
