@@ -16,13 +16,11 @@ function GameSquare({
   console.log(`\tboardPiece:\t${boardPiece}`);
 
   function handleClick(e) {
-    // place a piece
-    if (!isGameOver) {
+    if (!isGameOver && boardPiece === "") {
       transitionSequenceSquare.transitionDuration = 0;
       advanceGameState(rowID, squareID, playerPiece);
       checkForWinCondition();
       transferPlacementPriority();
-      // calcTransitionSequence();
     }
   }
 
@@ -312,27 +310,33 @@ function GameArea({
 }
 
 function GameHistory({ oldBoards, handleHistoryButtonClick }) {
+  console.log(oldBoards.length);
+
   const buttonList = oldBoards.map((boardState, turnNumber) => {
-    if (turnNumber === 0) {
-      return (
-        <button
-          className="history-button"
-          key={turnNumber}
-          onClick={() => handleHistoryButtonClick(turnNumber)}
-        >
-          Go to game beginning
-        </button>
-      );
+    if (turnNumber + 1 === oldBoards.length) {
+      return <div key={turnNumber} style={{ display: "none" }}></div>;
     } else {
-      return (
-        <button
-          className="history-button"
-          key={turnNumber}
-          onClick={() => handleHistoryButtonClick(turnNumber)}
-        >
-          Go to turn #{turnNumber}
-        </button>
-      );
+      if (turnNumber === 0) {
+        return (
+          <button
+            className="history-button"
+            key={turnNumber}
+            onClick={() => handleHistoryButtonClick(turnNumber)}
+          >
+            Go to game beginning
+          </button>
+        );
+      } else {
+        return (
+          <button
+            className="history-button"
+            key={turnNumber}
+            onClick={() => handleHistoryButtonClick(turnNumber)}
+          >
+            Go to turn #{turnNumber}
+          </button>
+        );
+      }
     }
   });
 
@@ -460,8 +464,6 @@ export default function App() {
     console.log("nextTimeline:");
     console.log(nextTimeline);
     setOldBoards(nextTimeline);
-
-    setIsGameOver(false);
 
     updateChangedSquareHistory(turnNumberToReturnTo);
     setCurrentTurnNumber(turnNumberToReturnTo);
