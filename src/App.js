@@ -11,7 +11,6 @@ function GameSquare({
   checkForWinCondition,
   transferPlacementPriority,
   transitionSequenceSquare,
-  calcTransitionSequence,
 }) {
   console.log(`Rendering square (${rowID}, ${squareID})...`);
   console.log(`\tboardPiece:\t${boardPiece}`);
@@ -60,7 +59,6 @@ function GameRow({
   checkForWinCondition,
   transferPlacementPriority,
   transitionSequenceRow,
-  calcTransitionSequence,
 }) {
   return (
     <div className="game-row">
@@ -74,7 +72,6 @@ function GameRow({
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
         transitionSequenceSquare={transitionSequenceRow[0]}
-        calcTransitionSequence={calcTransitionSequence}
       />
       <GameSquare
         boardPiece={boardRow[1]}
@@ -86,7 +83,6 @@ function GameRow({
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
         transitionSequenceSquare={transitionSequenceRow[1]}
-        calcTransitionSequence={calcTransitionSequence}
       />
       <GameSquare
         boardPiece={boardRow[2]}
@@ -98,7 +94,6 @@ function GameRow({
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
         transitionSequenceSquare={transitionSequenceRow[2]}
-        calcTransitionSequence={calcTransitionSequence}
       />
     </div>
   );
@@ -112,7 +107,6 @@ function GameBoard({
   checkForWinCondition,
   transferPlacementPriority,
   transitionSequence,
-  calcTransitionSequence,
 }) {
   return (
     <div className="game-board">
@@ -125,7 +119,6 @@ function GameBoard({
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
         transitionSequenceRow={transitionSequence[0]}
-        calcTransitionSequence={calcTransitionSequence}
       />
       <GameRow
         boardRow={boardState[1]}
@@ -136,7 +129,6 @@ function GameBoard({
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
         transitionSequenceRow={transitionSequence[1]}
-        calcTransitionSequence={calcTransitionSequence}
       />
       <GameRow
         boardRow={boardState[2]}
@@ -147,7 +139,6 @@ function GameBoard({
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
         transitionSequenceRow={transitionSequence[2]}
-        calcTransitionSequence={calcTransitionSequence}
       />
     </div>
   );
@@ -185,10 +176,11 @@ function GameArea({
   isGameOver,
   setIsGameOver,
   transitionSequence,
-  calcTransitionSequence,
+  playerPiece,
+  playerID,
+  setPlayerPiece,
+  setPlayerID,
 }) {
-  const [playerPiece, setPlayerPiece] = useState("X");
-  const [playerID, setPlayerID] = useState(1);
   const [winnerPiece, setWinnerPiece] = useState("");
   const [winnerID, setWinnnerID] = useState("");
 
@@ -314,7 +306,6 @@ function GameArea({
         checkForWinCondition={checkForWinCondition}
         transferPlacementPriority={transferPlacementPriority}
         transitionSequence={transitionSequence}
-        calcTransitionSequence={calcTransitionSequence}
       />
     </div>
   );
@@ -383,6 +374,8 @@ export default function App() {
       { boardPiece: "", transitionDuration: 0, transitionDelay: 0 },
     ],
   ]);
+  const [playerPiece, setPlayerPiece] = useState("X");
+  const [playerID, setPlayerID] = useState(1);
 
   function updateChangedSquareHistory(turnNumberToReturnTo) {
     const rowChangesBeforeTurn = rowHistory.slice(0, turnNumberToReturnTo + 1);
@@ -459,8 +452,6 @@ export default function App() {
     calcTransitionSequence(turnNumberToReturnTo);
 
     const nextBoardState = oldBoards[turnNumberToReturnTo];
-    console.log("nextBoardState:");
-    console.log(nextBoardState);
     setBoardState(nextBoardState);
     // forget moves that are after old turn
     const nextTimeline = JSON.parse(
@@ -470,18 +461,18 @@ export default function App() {
     console.log(nextTimeline);
     setOldBoards(nextTimeline);
 
-    // reset "isGameOver"
     setIsGameOver(false);
-
-    // organize a mega object that has the following information:
-    //  1. piece for all 9 squares
-    //  2. transition duration for all 9 squares
-    //    individualTransitionDuration = 1000 / piecesToRemove;
-    //  3. transition delay for all 9 squares
-    //    individualTransitionDelay = 1000 /
 
     updateChangedSquareHistory(turnNumberToReturnTo);
     setCurrentTurnNumber(turnNumberToReturnTo);
+
+    if (turnNumberToReturnTo % 2 === 0) {
+      setPlayerPiece("X");
+      setPlayerID(1);
+    } else {
+      setPlayerPiece("O");
+      setPlayerID(2);
+    }
   }
 
   function addToSquareHistory(changedRowID, changedSquareID) {
@@ -527,6 +518,10 @@ export default function App() {
         setIsGameOver={setIsGameOver}
         transitionSequence={transitionSequence}
         calcTransitionSequence={calcTransitionSequence}
+        playerPiece={playerPiece}
+        playerID={playerID}
+        setPlayerPiece={setPlayerPiece}
+        setPlayerID={setPlayerID}
       />
       <GameHistory
         oldBoards={oldBoards}
