@@ -1,3 +1,63 @@
+.player1-box-border {
+  border: 1px solid black;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 2.5rem 0.5rem 0.5rem;
+}
+
+.player2-box-border {
+  border: 1px solid black;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 2.5rem 0.5rem 0.5rem;
+}
+
+.player1-box {
+  /* border: 1px dashed black; */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  grid: 1;
+}
+
+.player2-box {
+  /* border: 1px dashed black; */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  grid: 2;
+}
+
+.game-area {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+@media screen and (width <= 600px) {
+  .game-area {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: 1;
+    grid-template-rows: repeat(3, auto);
+    gap: 1rem;
+    /* justify-content: center; */
+    /* align-items: center; */
+  }
+}
+
+.player-portrait {
+  height: 3rem;
+  width: 3rem;
+  border-radius: 3rem;
+  border: 1px solid black;
+  background: linear-gradient(45deg, pink, white);
+}
+
 .history-button {
   opacity: 1;
 }
@@ -48,7 +108,7 @@
   border: 1px black solid;
 }
 
-.game-area {
+.board-area {
   display: flex;
   flex-direction: column;
   justify-items: center;

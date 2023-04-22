@@ -142,6 +142,38 @@ function GameBoard({
   );
 }
 
+function PlayerBox({ playerName, playerID }) {
+  if (playerID === 1) {
+    return (
+      <div className="player1-box">
+        <div className="player1-box-border">
+          <Avatar />
+          <span>{playerName}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (playerID === 2) {
+    return (
+      <div className="player2-box">
+        <div className="player2-box-border">
+          <Avatar />
+          <span>{playerName}</span>
+        </div>
+      </div>
+    );
+  }
+}
+
+function Avatar() {
+  return (
+    <div>
+      <img className="player-portrait" alt=""></img>
+    </div>
+  );
+}
+
 function GameDescription({
   playerID,
   playerPiece,
@@ -289,22 +321,26 @@ function GameArea({
 
   return (
     <div className="game-area">
-      <GameDescription
-        playerID={playerID}
-        playerPiece={playerPiece}
-        winnerID={winnerID}
-        winnerPiece={winnerPiece}
-        isGameOver={isGameOver}
-      />
-      <GameBoard
-        boardState={boardState}
-        playerPiece={playerPiece}
-        isGameOver={isGameOver}
-        advanceGameState={advanceGameState}
-        checkForWinCondition={checkForWinCondition}
-        transferPlacementPriority={transferPlacementPriority}
-        transitionSequence={transitionSequence}
-      />
+      <PlayerBox playerName={"Player 1"} playerID={1} />
+      <div className="board-area">
+        <GameDescription
+          playerID={playerID}
+          playerPiece={playerPiece}
+          winnerID={winnerID}
+          winnerPiece={winnerPiece}
+          isGameOver={isGameOver}
+        />
+        <GameBoard
+          boardState={boardState}
+          playerPiece={playerPiece}
+          isGameOver={isGameOver}
+          advanceGameState={advanceGameState}
+          checkForWinCondition={checkForWinCondition}
+          transferPlacementPriority={transferPlacementPriority}
+          transitionSequence={transitionSequence}
+        />
+      </div>
+      <PlayerBox playerName={"Computer"} playerID={2} />
     </div>
   );
 }
@@ -314,7 +350,7 @@ function GameHistory({ oldBoards, handleHistoryButtonClick }) {
 
   const buttonList = oldBoards.map((boardState, turnNumber) => {
     if (turnNumber + 1 === oldBoards.length) {
-      return <div key={turnNumber} style={{ display: "none" }}></div>;
+      return null;
     } else {
       if (turnNumber === 0) {
         return (
@@ -465,6 +501,7 @@ export default function App() {
     console.log(nextTimeline);
     setOldBoards(nextTimeline);
 
+    setIsGameOver(false);
     updateChangedSquareHistory(turnNumberToReturnTo);
     setCurrentTurnNumber(turnNumberToReturnTo);
 
